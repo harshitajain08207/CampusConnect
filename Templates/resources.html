@@ -292,6 +292,57 @@
     </button>
 
 </form>
+<div class="filter-box" style="margin-bottom: 20px;">
+
+    <div class="form-group search-group">
+        <label>Search Paper</label>
+        <input type="text"
+               id="paper-search"
+               placeholder="Search by title..."
+               onkeydown="if(event.key === 'Enter') filterPapers()">
+    </div>
+
+    <div class="form-group">
+        <label>Semester</label>
+        <select id="paper-semester-filter">
+            <option value="">All</option>
+            <option value="1">Semester 1</option>
+            <option value="2">Semester 2</option>
+            <option value="3">Semester 3</option>
+            <option value="4">Semester 4</option>
+            <option value="5">Semester 5</option>
+            <option value="6">Semester 6</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Exam Type</label>
+        <select id="paper-type-filter">
+            <option value="">All</option>
+            <option value="Mid Semester">Mid Semester</option>
+            <option value="End Semester">End Semester</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Year</label>
+        <select id="paper-year-filter">
+            <option value="">All</option>
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+        </select>
+    </div>
+
+    <button type="button"
+            class="btn btn-primary"
+            onclick="filterPapers()">
+        Search
+    </button>
+
+</div>
         <div class="papers-list">
 
     {% for paper in question_papers %}
@@ -386,6 +437,54 @@ function filterResources() {
             matchesType
                 ? "flex"
                 : "none";
+    });
+}
+</script>
+<script>
+function filterPapers() {
+    const searchText = document.getElementById("paper-search").value
+        .toLowerCase()
+        .trim();
+
+    const semester = document.getElementById("paper-semester-filter").value;
+
+    const examType = document.getElementById("paper-type-filter").value
+        .toLowerCase();
+
+    const year = document.getElementById("paper-year-filter").value;
+
+    const papers = document.querySelectorAll(".paper-card");
+
+    papers.forEach(paper => {
+        const title = paper.querySelector("h3").innerText.toLowerCase();
+        const paperText = paper.innerText.toLowerCase();
+
+        const matchesSearch =
+            searchText === "" ||
+            title.includes(searchText);
+
+        const matchesSemester =
+            semester === "" ||
+            paperText.includes("semester " + semester);
+
+        const matchesExamType =
+            examType === "" ||
+            paperText.includes(examType);
+
+        const matchesYear =
+            year === "" ||
+            paperText.includes(year);
+
+        if (
+            matchesSearch &&
+            matchesSemester &&
+            matchesExamType &&
+            matchesYear
+        ) {
+            paper.style.display = "flex";
+        } else {
+            paper.style.display = "none";
+        }
     });
 }
 </script>

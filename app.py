@@ -269,22 +269,25 @@ def upload_question_paper():
          exam_year, file_name, file_path, uploaded_by)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-
     values = (
-    title,
-    subject,
-    semester,
-    resource_type,
-    original_filename,
-    file_path,
-    session["user_id"]
-)
+        title,
+        department,
+        subject,
+        semester,
+        exam_type,
+        exam_year,
+        original_filename,
+        file_path,
+        session["user_id"]
+    )
 
     cursor.execute(query, values)
     db.commit()
     cursor.close()
 
     return redirect(url_for("resources"))
+
+   
 @app.route("/download-question-paper/<int:paper_id>")
 def download_question_paper(paper_id):
     if "user_id" not in session:
