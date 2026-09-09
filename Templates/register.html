@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | CampusConnect</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <div class="auth-page">
+
+        <div class="auth-container">
+
+            <!-- Logo -->
+            <div class="auth-logo">
+                🎓 CampusConnect
+            </div>
+
+            <h1>Create Your Account</h1>
+
+            <p class="auth-subtitle">
+                Join CampusConnect today
+            </p>
+
+
+            <!-- Registration Form -->
+             <form method="POST" action="/register">
+                <!-- Full Name -->
+                <div class="form-group">
+
+                    <label for="name">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Enter your full name"
+                    >
+
+                </div>
+
+
+                <!-- Email -->
+                <div class="form-group">
+
+                    <label for="email">
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
+                    >
+
+                </div>
+
+
+                <!-- Password -->
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Create a password"
+                    >
+
+                </div>
+
+
+                <!-- Department + Semester -->
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="department">
+                            Department
+                        </label>
+
+                        <select id="department" name="department">
+
+                            <option value="">
+                                Select Department
+                            </option>
+
+                            <option value="computer-science">
+                                Computer Science
+                            </option>
+
+                            <option value="information-technology">
+                                Information Technology
+                            </option>
+
+                            <option value="management">
+                                Management
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="semester">
+                            Semester
+                        </label>
+
+                        <select id="semester" name="semester">
+
+                            <option value="">
+                                Select Semester
+                            </option>
+
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Role -->
+                <div class="form-group role-group">
+
+                    <label>
+                        I am a:
+                    </label>
+
+                    <div class="role-options">
+
+                        <label class="radio-option">
+
+                            <input
+                                type="radio"
+                                name="role"
+                                value="student"
+                                checked
+                            >
+
+                            <span>Student</span>
+
+                        </label>
+
+
+                        <label class="radio-option">
+
+                            <input
+                                type="radio"
+                                name="role"
+                                value="teacher"
+                            >
+
+                            <span>Teacher</span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <!-- Button -->
+                <button
+                    type="submit"
+                    class="auth-button"
+                >
+                    Create Account
+                </button>
+
+            </form>
+
+            <!-- Login link -->
+            <p class="register-text">
+
+                Already have an account?
+
+                <a href="{{ url_for('login') }}">
+                    Login
+                </a>
+
+            </p>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

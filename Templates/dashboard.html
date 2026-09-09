@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard | CampusConnect</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <!-- Welcome Popup -->
+    <div class="welcome-overlay" id="welcomePopup">
+
+        <div class="welcome-popup">
+
+            <button class="close-popup" onclick="closeWelcome()">
+                &times;
+            </button>
+
+            <div class="welcome-icon">
+                🎓
+            </div>
+
+            <p class="welcome-small">
+                WELCOME TO CAMPUSCONNECT
+            </p>
+
+            <h1>
+                Hey, {{ session["name"] }}! 👋
+            </h1>
+
+            <p class="welcome-message">
+                We're happy to have you here.
+                Everything you need for your campus life
+                is now in one place.
+            </p>
+
+            <div class="welcome-line"></div>
+
+            <p class="welcome-hint">
+                Explore. Connect. Learn. ✨
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Dashboard -->
+
+    <div class="dashboard">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">
+                🎓 CampusConnect
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <a href="#" class="active">
+                    🏠 Dashboard
+                </a>
+
+                <a href="{{ url_for('resources') }}">📚 Study Resources</a>
+
+                <a href="#">
+                    🤝 SkillSwap
+                </a>
+
+                <a href="#">
+                    🔍 Lost & Found
+                </a>
+
+                <a href="#">
+                    👨‍🏫 Teacher Availability
+                </a>
+
+                <a href="#">
+                    📢 Announcements
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <a href="#">
+                    ⚙️ Settings
+                </a>
+
+                <a href="#">
+                    🚪 Logout
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- Main Content -->
+
+        <main class="dashboard-main">
+
+            <div class="dashboard-top">
+
+                <div>
+                    <p class="dashboard-label">
+                        STUDENT DASHBOARD
+                    </p>
+
+                    <h1>
+                        Welcome back, {{ session["name"] }} 👋
+                    </h1>
+
+                    <p class="dashboard-subtitle">
+                        Here's what's happening around your campus.
+                    </p>
+                </div>
+
+                <div class="profile-info">
+    <div class="profile-icon">
+        👤
+    </div>
+
+    <span class="profile-name">
+        {{ session["name"] }}
+    </span>
+</div>
+            </div>
+
+
+            <!-- Feature Cards -->
+
+            <section class="dashboard-cards">
+
+                <div class="dashboard-card">
+                    <div class="card-icon">📚</div>
+
+                    <h3>Study Resources</h3>
+
+                    <p>
+                        Access notes, study materials and
+                        previous question papers.
+                    </p>
+
+                    <a href="#">Explore Resources →</a>
+                </div>
+
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🤝</div>
+
+                    <h3>SkillSwap</h3>
+
+                    <p>
+                        Share your skills and connect with
+                        students who can help you.
+                    </p>
+
+                    <a href="#">Explore SkillSwap →</a>
+                </div>
+
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🔍</div>
+
+                    <h3>Lost & Found</h3>
+
+                    <p>
+                        Report lost items or help someone
+                        find their belongings.
+                    </p>
+
+                    <a href="#">View Lost & Found →</a>
+                </div>
+
+
+                <div class="dashboard-card">
+                    <div class="card-icon">👨‍🏫</div>
+
+                    <h3>Teacher Availability</h3>
+
+                    <p>
+                        Check teacher availability,
+                        schedules and locations.
+                    </p>
+
+                    <a href="#">Find a Teacher →</a>
+                </div>
+
+            </section>
+
+
+            <!-- Bottom Section -->
+
+            <section class="dashboard-bottom">
+
+                <div class="announcement-box">
+
+                    <div class="section-heading">
+                        <h2>📢 Latest Announcements</h2>
+
+                        <a href="#">View All</a>
+                    </div>
+
+                    <div class="announcement-item">
+                        <strong>CampusConnect</strong>
+                        <p>
+                            Welcome to your new campus platform!
+                        </p>
+                    </div>
+
+                    <div class="announcement-item">
+                        <strong>Coming Soon</strong>
+                        <p>
+                            New study resources will be available here.
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="quick-box">
+
+                    <h2>⚡ Quick Access</h2>
+
+                    <button>Upload Notes</button>
+                    <button>Find a Skill</button>
+                    <button>Report Lost Item</button>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        function closeWelcome() {
+            document.getElementById("welcomePopup").style.display = "none";
+        }
+
+    </script>
+
+</body>
+
+</html>
