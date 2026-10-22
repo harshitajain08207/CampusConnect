@@ -29,6 +29,21 @@ line-height: 1.6;
     max-width: 1200px;
     margin: 0 auto;
 }
+.back-dashboard {
+    display: inline-block;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    opacity: 0.9;
+    transition: 0.2s ease;
+}
+
+.back-dashboard:hover {
+    opacity: 1;
+    transform: translateX(-3px);
+}
 
 .page-header h1 {
     font-size: 28px;
@@ -314,4 +329,29 @@ font-size: 13px;
 }
 
 
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px 20px;
+    border: 1px dashed #d1d5db;
+    border-radius: 10px;
+    background: #f9fafb;
+}
+
+.empty-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.empty-state h3 {
+    color: #111827;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+
+.empty-state p {
+    color: #6b7280;
+    font-size: 14px;
 }

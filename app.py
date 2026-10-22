@@ -46,16 +46,20 @@ def login():
         user = cursor.fetchone()
         cursor.close()
 
+    
         if user and check_password_hash(user["password"], password):
+            session.clear()
             session["user_id"] = user["user_id"]
             session["name"] = user["full_name"]
             session["role"] = user["role"]
+            session["show_welcome"] = True
 
             return redirect(url_for("dashboard"))
 
         return "Invalid email or password"
 
     return render_template("login.html")
+
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -92,9 +96,25 @@ def register():
         return redirect(url_for("login"))
 
     return render_template("register.html")
+@app.route("/skillswap")
+def skillswap():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    return render_template("skillswap.html")
+
 @app.route("/dashboard")
 def dashboard():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
     return render_template("dashboard.html")
+
+
+@app.route("/dismiss-welcome", methods=["POST"])
+def dismiss_welcome():
+    session.pop("show_welcome", None)
+    return "", 204
 
 @app.route("/resources")
 def resources():

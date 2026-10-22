@@ -16,8 +16,14 @@
 <!-- Header -->
 <header class="page-header">
     <div class="header-content">
+
+        <a href="{{ url_for('dashboard') }}" class="back-dashboard">
+            ← Back to Dashboard
+        </a>
+
         <h1>📚 CampusConnect</h1>
         <p>Study Resources & Previous Question Papers</p>
+
     </div>
 </header>
 
@@ -147,7 +153,12 @@
 
         </div>
 
-        {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">&#128269;</div>
+                <h3>No resources found</h3>
+                <p>There are no study resources available yet.</p>
+            </div>        {% endfor %}
 
     </div>
 
@@ -453,6 +464,8 @@ function filterResources() {
                 ? "flex"
                 : "none";
     });
+
+    showResourceNoResults();
 }
 </script>
 <script>
@@ -501,7 +514,79 @@ function filterPapers() {
             paper.style.display = "none";
         }
     });
+
+    showPaperNoResults();
+}
+</script>
+<script id="resource-no-results">
+function showResourceNoResults() {
+    const grid = document.querySelector(".resource-grid");
+    const cards = document.querySelectorAll(".resource-card");
+
+    if (!grid || cards.length === 0) {
+        return;
+    }
+
+    const visibleCards = Array.from(cards).filter(
+        card => card.style.display !== "none"
+    );
+
+    let message = document.getElementById("resource-no-results-message");
+
+    if (visibleCards.length === 0) {
+        if (!message) {
+            message = document.createElement("div");
+            message.id = "resource-no-results-message";
+            message.className = "empty-state";
+            message.innerHTML = `
+                <div class="empty-icon">&#128269;</div>
+                <h3>No resources found</h3>
+                <p>Try changing your search or filters.</p>
+            `;
+            grid.appendChild(message);
+        }
+    } else if (message) {
+        message.remove();
+    }
+}
+</script>
+<script>
+function showPaperNoResults() {
+    const list = document.querySelector(".papers-list");
+    const papers = document.querySelectorAll(".paper-card");
+
+    if (!list || papers.length === 0) {
+        return;
+    }
+
+    const visiblePapers = Array.from(papers).filter(
+        paper => paper.style.display !== "none"
+    );
+
+    let message = document.getElementById("paper-no-results-message");
+
+    if (visiblePapers.length === 0) {
+        if (!message) {
+            message = document.createElement("div");
+            message.id = "paper-no-results-message";
+            message.className = "empty-state";
+            message.innerHTML = `
+                <div class="empty-icon">&#128269;</div>
+                <h3>No question papers found</h3>
+                <p>Try changing your search or filters.</p>
+            `;
+            list.appendChild(message);
+        }
+    } else if (message) {
+        message.remove();
+    }
 }
 </script>
 </body>
 </html>
+
+
+
+
+
+
