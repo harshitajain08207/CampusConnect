@@ -1,0 +1,374 @@
+/* ================================
+   CampusConnect - SkillSwap Page
+================================ */
+
+
+/* ---------- General ---------- */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f5f7fb;
+    color: #1f2937;
+    line-height: 1.6;
+}
+
+
+/* ---------- Header ---------- */
+
+.page-header {
+    background: #1e3a8a;
+    color: white;
+    padding: 30px 20px;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: auto;
+}
+
+.page-header h1 {
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+
+.page-header p {
+    font-size: 16px;
+    opacity: 0.9;
+}
+
+
+/* ---------- Main Container ---------- */
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 35px auto;
+}
+
+
+/* ---------- Intro ---------- */
+
+.intro-section {
+    background: white;
+    padding: 35px;
+    margin-bottom: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+}
+
+.section-label {
+    display: inline-block;
+    background: #eaf1ff;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.intro-section h2 {
+    color: #1e3a8a;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.intro-section p {
+    color: #6b7280;
+}
+
+
+/* ---------- Sections ---------- */
+
+.section {
+    background: white;
+    padding: 28px;
+    margin-bottom: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
+}
+
+.section-heading {
+    margin-bottom: 22px;
+}
+
+.section-heading h2 {
+    font-size: 24px;
+    color: #1e3a8a;
+    margin-bottom: 5px;
+}
+
+.section-heading p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* ---------- Forms ---------- */
+
+.filter-box {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
+
+.skill-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 7px;
+    font-size: 14px;
+    outline: none;
+    background: white;
+    font-family: inherit;
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #2563eb;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+
+/* ---------- Buttons ---------- */
+
+.btn {
+    border: none;
+    border-radius: 7px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+
+/* ---------- Skill Cards ---------- */
+
+.skill-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.skill-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: 0.2s ease;
+}
+
+.skill-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.skill-icon {
+    font-size: 35px;
+}
+
+.skill-content h3 {
+    color: #111827;
+    margin-bottom: 12px;
+    font-size: 18px;
+}
+
+.skill-content p {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.skill-content strong {
+    color: #374151;
+}
+
+.skill-description {
+    margin-top: 10px;
+}
+
+.skill-card .btn {
+    align-self: flex-start;
+}
+
+
+/* ---------- Offer Section ---------- */
+
+.offer-section {
+    background: #f8faff;
+}
+
+.skill-form .btn {
+    width: fit-content;
+}
+
+
+/* ---------- Skill Requests ---------- */
+
+.request-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.request-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.request-card > div {
+    flex: 1;
+}
+
+.request-card h3 {
+    font-size: 17px;
+    color: #111827;
+    margin-bottom: 3px;
+}
+
+.request-card p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* ---------- Status ---------- */
+
+.status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.pending {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.accepted {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+
+/* ---------- Footer ---------- */
+
+.footer {
+    text-align: center;
+    padding: 25px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+
+/* ---------- Responsive Design ---------- */
+
+@media (max-width: 900px) {
+
+    .filter-box {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .search-group {
+        grid-column: 1 / -1;
+    }
+
+    .skill-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .container {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    .section,
+    .intro-section {
+        padding: 20px;
+    }
+
+    .filter-box,
+    .skill-form {
+        grid-template-columns: 1fr;
+    }
+
+    .search-group,
+    .full-width {
+        grid-column: auto;
+    }
+
+    .request-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .request-card .status {
+        align-self: flex-start;
+    }
+
+    .page-header h1 {
+        font-size: 25px;
+    }
+
+    .intro-section h2 {
+        font-size: 23px;
+    }
+}

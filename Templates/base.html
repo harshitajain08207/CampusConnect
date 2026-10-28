@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}CampusConnect{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <script>
+    try { document.documentElement.dataset.theme = localStorage.getItem("cc-theme") || "light"; } catch (e) {}
+  </script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% if request.endpoint in ('home', 'login', 'register') %}
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  {% endif %}
+
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('dashboard') if session.get('user_id') else url_for('home') }}"><b>CC</b>CampusConnect</a>
+    {% if session.get('user_id') %}
+    <nav>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">Dashboard</a>
+      <a href="{{ url_for('resources') }}" class="{{ 'active' if request.endpoint == 'resources' else '' }}">Study resources</a>
+      <a href="{{ url_for('skillswap') }}" class="{{ 'active' if request.endpoint == 'skillswap' else '' }}">SkillSwap</a>
+    </nav>
+    {% endif %}
+    <button class="btn ghost" id="themeBtn" type="button" aria-label="Switch light or dark mode">Dark mode</button>
+    {% if session.get('user_id') %}
+      <span class="avatar" title="{{ session.get('name', '') }}">{{ (session.get('name') or '?')[:1]|upper }}</span>
+      <a class="btn ghost" href="{{ url_for('logout') }}">Log out</a>
+    {% else %}
+      <a class="btn ghost" href="{{ url_for('login') }}">Login</a>
+      <a class="btn" href="{{ url_for('register') }}">Get started</a>
+    {% endif %}
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flashes" role="status">
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+
+  <script>
+    document.getElementById("themeBtn").addEventListener("click", function () {
+      var next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("cc-theme", next); } catch (e) {}
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,270 +1,115 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}Dashboard | CampusConnect{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
+<main class="page">
+  <section class="hero">
+    <h1>Welcome back, {{ session["name"] }}</h1>
+    <p>Notes, skills, lost items and teachers, all in one place on your campus.</p>
+    <svg class="skyline" viewBox="0 0 1200 96" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+      <path d="M0 95H1200"/>
+      <path d="M40 95V62h70v33M60 62V50h30v12M75 50V38"/>
+      <path d="M170 95V48h50v47M180 60h8M200 60h8M180 76h8M200 76h8"/>
+      <path d="M290 95V70a45 45 0 0 1 90 0v25M335 25v13M322 95V75h26v20"/>
+      <path d="M430 95V30h36v65M448 30V14M436 44h24M448 56a8 8 0 1 1 0 .1"/>
+      <path d="M520 95V58h120v37M540 74h14M570 74h14M600 74h14"/>
+      <circle cx="690" cy="72" r="18"/><path d="M690 90v5"/>
+      <path d="M740 95V54h100v41M760 54V40h60v14M770 78h12M798 78h12"/>
+      <path d="M890 95V66a36 36 0 0 1 72 0v29M926 30v12"/>
+      <circle cx="1010" cy="74" r="16"/><path d="M1010 90v5"/>
+      <path d="M1060 95V50h90v45M1075 66h12M1100 66h12M1125 66h12"/>
+    </svg>
+  </section>
 
-    <title>Dashboard | CampusConnect</title>
+  <section class="stats" aria-label="Campus at a glance">
+    <div class="stat"><b>{{ resource_count }}</b><span>Resources shared</span></div>
+    <div class="stat"><b>{{ paper_count }}</b><span>Question papers</span></div>
+    <div class="stat"><b>{{ user_count }}</b><span>Students and teachers</span></div>
+  </section>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-</head>
+  <section class="bento" aria-label="Campus services">
+    <a class="tile t-main" href="{{ url_for('resources') }}">
+      <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 2h13"/></svg>
+      <h2>Study Resources</h2>
+      <p>Notes, study material and previous question papers for your department and semester.</p>
+      <span class="go">Open resources</span>
+    </a>
 
-<body>
+    <aside class="tile t-news" aria-label="Announcements">
+      <svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg>
+      <h2>Announcements</h2>
+      <div class="news-item"><strong>CampusConnect is live</strong><p>Your campus platform is open for students and teachers.</p></div>
+      <div class="news-item"><strong>Share your notes</strong><p>Upload notes and past papers to help your batch.</p></div>
+    </aside>
 
-    <!-- Welcome Popup -->
-    <div class="welcome-overlay"
-     id="welcomePopup"
-     data-show-welcome="{{ 'true' if session.get('show_welcome') else 'false' }}">
+    <a class="tile t-skill" href="{{ url_for('skillswap') }}">
+      <svg viewBox="0 0 24 24"><path d="M7 8h12l-3-3M17 16H5l3 3"/></svg>
+      <h2>SkillSwap</h2>
+      <p>Teach a skill you know and learn one you don't.</p>
+      <span class="go">Open SkillSwap</span>
+    </a>
 
-        <div class="welcome-popup">
+    <div class="tile t-lost soon" aria-disabled="true">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4-4"/></svg>
+      <h2>Lost &amp; Found</h2>
+      <p>Report lost items and get matched with what others find.</p>
+      <span class="badge">Coming soon</span>
+    </div>
 
-            <button class="close-popup" onclick="closeWelcome()">
-                &times;
-            </button>
+    <div class="tile t-teach soon" aria-disabled="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <div><h2>Teacher Availability</h2><p>See when teachers are free and where to find them.</p></div>
+      <span class="badge">Coming soon</span>
+    </div>
+  </section>
 
-            <div class="welcome-icon">
-                🎓
-            </div>
-
-            <p class="welcome-small">
-                WELCOME TO CAMPUSCONNECT
-            </p>
-
-            <h1>
-                Hey, {{ session["name"] }}! 👋
-            </h1>
-
-            <p class="welcome-message">
-                We're happy to have you here.
-                Everything you need for your campus life
-                is now in one place.
-            </p>
-
-            <div class="welcome-line"></div>
-
-            <p class="welcome-hint">
-                Explore. Connect. Learn. ✨
-            </p>
-
+  <section class="panel" style="margin-top:22px;margin-bottom:0">
+    <div class="panel-head">
+      <h2>Recently added</h2>
+      <p>The latest uploads from your campus.</p>
+    </div>
+    {% if recent %}
+    <ul class="recent-list">
+      {% for r in recent %}
+      <li>
+        <svg class="doc-icon" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg>
+        <div class="rt">
+          <strong>{{ r.title }}</strong>
+          <span>{{ r.subject }} | {{ 'Question paper' if r.kind == 'paper' else 'Resource' }} | {{ r.uploaded_at.strftime('%d %b %Y') }}</span>
         </div>
-
+        {% if r.kind == 'paper' %}
+          <a class="btn ghost" href="{{ url_for('download_question_paper', paper_id=r.item_id) }}">Download</a>
+        {% else %}
+          <a class="btn ghost" href="{{ url_for('download_resource', resource_id=r.item_id) }}">Download</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+      <h3>Nothing uploaded yet</h3>
+      <p>Upload your first note or question paper from Study Resources.</p>
     </div>
-
-
-    <!-- Dashboard -->
-
-    <div class="dashboard">
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-
-            <div class="sidebar-logo">
-                🎓 CampusConnect
-            </div>
-
-            <nav class="sidebar-menu">
-
-                <a href="#" class="active">
-                    🏠 Dashboard
-                </a>
-
-                <a href="{{ url_for('resources') }}">📚 Study Resources</a>
-
-                <a href="{{ url_for('skillswap') }}">
-                    🤝 SkillSwap
-                </a>
-
-                <a href="#">
-                    🔍 Lost & Found
-                </a>
-
-                <a href="#">
-                    👨‍🏫 Teacher Availability
-                </a>
-
-                <a href="#">
-                    📢 Announcements
-                </a>
-
-            </nav>
-
-            <div class="sidebar-bottom">
-
-                <a href="#">
-                    ⚙️ Settings
-                </a>
-
-                <a href="#">
-                    🚪 Logout
-                </a>
-
-            </div>
-
-        </aside>
-
-
-        <!-- Main Content -->
-
-        <main class="dashboard-main">
-
-            <div class="dashboard-top">
-
-                <div>
-                    <p class="dashboard-label">
-                        STUDENT DASHBOARD
-                    </p>
-
-                    <h1>
-                        Welcome back, {{ session["name"] }} 👋
-                    </h1>
-
-                    <p class="dashboard-subtitle">
-                        Here's what's happening around your campus.
-                    </p>
-                </div>
-
-                <div class="profile-info">
-    <div class="profile-icon">
-        👤
-    </div>
-
-    <span class="profile-name">
-        {{ session["name"] }}
-    </span>
-</div>
-            </div>
-
-
-            <!-- Feature Cards -->
-
-            <section class="dashboard-cards">
-
-                <div class="dashboard-card">
-                    <div class="card-icon">📚</div>
-
-                    <h3>Study Resources</h3>
-
-                    <p>
-                        Access notes, study materials and
-                        previous question papers.
-                    </p>
-
-                    <a href="#">Explore Resources →</a>
-                </div>
-
-
-                <div class="dashboard-card">
-                    <div class="card-icon">🤝</div>
-
-                    <h3>SkillSwap</h3>
-
-                    <p>
-                        Share your skills and connect with
-                        students who can help you.
-                    </p>
-
-                    <a href="#">Explore SkillSwap →</a>
-                </div>
-
-
-                <div class="dashboard-card">
-                    <div class="card-icon">🔍</div>
-
-                    <h3>Lost & Found</h3>
-
-                    <p>
-                        Report lost items or help someone
-                        find their belongings.
-                    </p>
-
-                    <a href="#">View Lost & Found →</a>
-                </div>
-
-
-                <div class="dashboard-card">
-                    <div class="card-icon">👨‍🏫</div>
-
-                    <h3>Teacher Availability</h3>
-
-                    <p>
-                        Check teacher availability,
-                        schedules and locations.
-                    </p>
-
-                    <a href="#">Find a Teacher →</a>
-                </div>
-
-            </section>
-
-
-            <!-- Bottom Section -->
-
-            <section class="dashboard-bottom">
-
-                <div class="announcement-box">
-
-                    <div class="section-heading">
-                        <h2>📢 Latest Announcements</h2>
-
-                        <a href="#">View All</a>
-                    </div>
-
-                    <div class="announcement-item">
-                        <strong>CampusConnect</strong>
-                        <p>
-                            Welcome to your new campus platform!
-                        </p>
-                    </div>
-
-                    <div class="announcement-item">
-                        <strong>Coming Soon</strong>
-                        <p>
-                            New study resources will be available here.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="quick-box">
-
-                    <h2>⚡ Quick Access</h2>
-
-                    <button>Upload Notes</button>
-                    <button>Find a Skill</button>
-                    <button>Report Lost Item</button>
-
-                </div>
-
-            </section>
-
-        </main>
-
-    </div>
-
-
-    
+    {% endif %}
+  </section>
+</main>
+
+{% if session.get('show_welcome') %}
+<aside class="welcome" id="welcome">
+  <button type="button" onclick="closeWelcome()" aria-label="Close">&times;</button>
+  <strong>Hello, {{ session["name"] }}.</strong><br>Pick a service below to get started.
+</aside>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
 <script>
-    function closeWelcome() {
-        document.getElementById("welcomePopup").style.display = "none";
-
-        fetch("/dismiss-welcome", {
-            method: "POST"
-        });
-    }
-
-    window.addEventListener("DOMContentLoaded", function () {
-        const popup = document.getElementById("welcomePopup");
-
-        if (popup.dataset.showWelcome !== "true") {
-            popup.style.display = "none";
-        }
+  function closeWelcome() {
+    document.getElementById("welcome").remove();
+    fetch("/dismiss-welcome", {
+      method: "POST",
+      headers: { "X-CSRFToken": document.querySelector('meta[name="csrf-token"]').content }
     });
+  }
 </script>
-
-
-</body>
-
-</html>
+{% endblock %}

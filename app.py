@@ -1,13 +1,34 @@
-from flask import Flask, render_template, request, redirect, url_for, session,send_file
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect, CSRFError
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from werkzeug.security import check_password_hash, generate_password_hash
 import mysql.connector
 import os
 import uuid
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
-app = Flask(__name__)
-app.secret_key = "campusconnect-secret-key"
 load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY")
+if not app.secret_key:
+    raise RuntimeError("SECRET_KEY is missing. Add it to your .env file.")
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE="Lax")
+csrf = CSRFProtect(app)
+
+
+@app.errorhandler(CSRFError)
+def csrf_error(e):
+    flash("Your session expired. Please try again.", "error")
+    return redirect(url_for("login"))
+limiter = Limiter(get_remote_address, app=app, storage_uri="memory://")
+
+
+@app.errorhandler(429)
+def too_many_requests(e):
+    flash("Too many attempts. Please wait a minute and try again.", "error")
+    return redirect(url_for("login"))
 
 ALLOWED_EXTENSIONS = {"pdf", "doc", "docx"}
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
@@ -25,6 +46,9 @@ db = mysql.connector.connect(
     password=os.getenv("DB_PASSWORD"),
     database=os.getenv("DB_NAME")
 )
+@app.before_request
+def keep_db_alive():
+    db.ping(reconnect=True, attempts=3, delay=1)
 
 
 @app.route("/")
@@ -33,6 +57,7 @@ def home():
 
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"]
@@ -55,18 +80,20 @@ def login():
             session["show_welcome"] = True
 
             return redirect(url_for("dashboard"))
-
-        return "Invalid email or password"
+        
+        flash("Incorrect email or password. Please try again.", "error")
+        return redirect(url_for("login"))
 
     return render_template("login.html")
 
 
 
 @app.route("/register", methods=["GET", "POST"])
+@limiter.limit("10 per hour", methods=["POST"])
 def register():
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
+        name = request.form["name"].strip()
+        email = request.form["email"].strip().lower()
         password = generate_password_hash(request.form["password"])
         department = request.form["department"]
         semester = request.form["semester"]
@@ -74,25 +101,24 @@ def register():
 
         cursor = db.cursor()
 
-        query = """
+        cursor.execute("SELECT user_id FROM users WHERE email = %s", (email,))
+        if cursor.fetchone():
+            cursor.close()
+            flash("An account with this email already exists. Please log in.", "error")
+            return redirect(url_for("register"))
+
+        cursor.execute(
+            """
             INSERT INTO users
             (full_name, email, password, role, department, semester)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """
-
-        values = (
-            name,
-            email,
-            password,
-            role,
-            department,
-            semester
+            """,
+            (name, email, password, role, department, semester)
         )
-
-        cursor.execute(query, values)
         db.commit()
         cursor.close()
 
+        flash("Account created. You can log in now.", "success")
         return redirect(url_for("login"))
 
     return render_template("register.html")
@@ -108,7 +134,36 @@ def dashboard():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    return render_template("dashboard.html")
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT COUNT(*) AS n FROM resources")
+    resource_count = cursor.fetchone()["n"]
+
+    cursor.execute("SELECT COUNT(*) AS n FROM question_papers")
+    paper_count = cursor.fetchone()["n"]
+
+    cursor.execute("SELECT COUNT(*) AS n FROM users")
+    user_count = cursor.fetchone()["n"]
+
+    cursor.execute("""
+        SELECT resource_id AS item_id, title, subject, uploaded_at, 'resource' AS kind
+        FROM resources
+        UNION ALL
+        SELECT paper_id, title, subject, uploaded_at, 'paper'
+        FROM question_papers
+        ORDER BY uploaded_at DESC
+        LIMIT 5
+    """)
+    recent = cursor.fetchall()
+    cursor.close()
+
+    return render_template(
+        "dashboard.html",
+        resource_count=resource_count,
+        paper_count=paper_count,
+        user_count=user_count,
+        recent=recent
+    )
 
 
 @app.route("/dismiss-welcome", methods=["POST"])
@@ -192,7 +247,7 @@ def upload_resource():
     if not allowed_file(file.filename):
         return "Invalid file type. Only PDF, DOC and DOCX files are allowed."  
 
-    upload_folder = "static/uploads"
+    upload_folder = "uploads"
     os.makedirs(upload_folder, exist_ok=True)
 
     original_filename = secure_filename(file.filename)
@@ -224,7 +279,7 @@ def upload_resource():
     db.commit()
 
     cursor.close()
-
+    flash("Resource uploaded. Thank you for sharing!", "success")
     return redirect(url_for("resources"))
 @app.route("/download-resource/<int:resource_id>")
 def download_resource(resource_id):
@@ -245,14 +300,20 @@ def download_resource(resource_id):
 
     cursor.close()
 
-    if not resource:
-        return "Resource not found"
+    if not resource or not resource["file_path"] or not os.path.exists(resource["file_path"]):
+        flash("This file is not available.", "error")
+        return redirect(url_for("resources"))
 
     return send_file(
         resource["file_path"],
         as_attachment=True,
         download_name=resource["file_name"]
     )
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 @app.route("/upload-question-paper", methods=["POST"])
 def upload_question_paper():
     if "user_id" not in session:
@@ -272,7 +333,7 @@ def upload_question_paper():
     if not allowed_file(file.filename):
         return "Invalid file type. Only PDF, DOC and DOCX files are allowed."
 
-    upload_folder = "static/uploads"
+    upload_folder = "uploads"
     os.makedirs(upload_folder, exist_ok=True)
 
     original_filename = secure_filename(file.filename)
@@ -304,7 +365,7 @@ def upload_question_paper():
     cursor.execute(query, values)
     db.commit()
     cursor.close()
-
+    flash("Question paper uploaded. Thank you for sharing!", "success")
     return redirect(url_for("resources"))
 
    
@@ -325,8 +386,9 @@ def download_question_paper(paper_id):
     paper = cursor.fetchone()
     cursor.close()
 
-    if not paper:
-        return "Question paper not found"
+    if not paper or not paper["file_path"] or not os.path.exists(paper["file_path"]):
+        flash("This file is not available.", "error")
+        return redirect(url_for("resources"))
 
     return send_file(
         paper["file_path"],

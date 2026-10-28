@@ -1,589 +1,357 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
+{% block title %}Study Resources | CampusConnect{% endblock %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Resources - CampusConnect</title>
+{% block content %}
+<main class="page">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/resources.css') }}">
+  <div class="res-head">
+    <h1>Study Resources</h1>
+    <p>Notes, study material and previous question papers shared by students.</p>
+  </div>
 
-
-</head>
-
-<body>
-
-<!-- Header -->
-<header class="page-header">
-    <div class="header-content">
-
-        <a href="{{ url_for('dashboard') }}" class="back-dashboard">
-            ← Back to Dashboard
-        </a>
-
-        <h1>📚 CampusConnect</h1>
-        <p>Study Resources & Previous Question Papers</p>
-
+  <!-- Search and filters -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Find resources</h2>
+      <p>Search by title, or filter by subject, semester and type.</p>
     </div>
-</header>
 
+    <div class="filters" style="margin-bottom:0">
+      <div class="field search-group">
+        <label for="search">Search</label>
+        <input type="text" id="search" placeholder="Search by title"
+               onkeydown="if(event.key === 'Enter') filterResources()">
+      </div>
 
-<main class="container">
+      <div class="field">
+        <label for="subject-filter">Subject</label>
+        <select id="subject-filter">
+          <option value="">All subjects</option>
+          <option value="Data Structures">Data Structures</option>
+          <option value="Database Management Systems">Database Management Systems</option>
+          <option value="Computer Networks">Computer Networks</option>
+          <option value="Operating Systems">Operating Systems</option>
+          <option value="Java">Java</option>
+        </select>
+      </div>
 
-    <!-- ================= SEARCH & FILTERS ================= -->
-    <section class="section">
-        <div class="section-heading">
-            <h2>🔎 Find Study Resources</h2>
-            <p>Search and filter resources according to your needs.</p>
-        </div>
+      <div class="field">
+        <label for="semester-filter">Semester</label>
+        <select id="semester-filter">
+          <option value="">All semesters</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+          <option value="9">Semester 9</option>
+          <option value="10">Semester 10</option>
+        </select>
+      </div>
 
-        <div class="filter-box">
+      <div class="field">
+        <label for="type-filter">Type</label>
+        <select id="type-filter">
+          <option value="">All types</option>
+          <option value="Notes">Notes</option>
+          <option value="Study Material">Study Material</option>
+          <option value="Question Paper">Question Paper</option>
+          <option value="Assignment">Assignment</option>
+          <option value="E-Book">E-Book</option>
+        </select>
+      </div>
 
-            <div class="form-group search-group">
-                <label for="search">Search</label>
-                <input
-                    type="text"
-                    id="search"
-                    placeholder="Search resources..."
-                    onkeydown="if(event.key === 'Enter') filterResources()"
+      <button type="button" class="btn" onclick="filterResources()">Search</button>
+    </div>
+  </section>
 
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="subject-filter">Subject</label>
-                <select id="subject-filter">
-                    <option value="">All Subjects</option>
-                    <option value="Data Structures">Data Structures</option>
-                    <option value="Database Management Systems">Database Management Systems</option>
-                    <option value="Computer Networks">Computer Networks</option>
-                    <option value="Operating Systems">Operating Systems</option>
-                    <option value="Java">Java</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="semester-filter">Semester</label>
-                <select id="semester-filter">
-                    <option value="">All Semesters</option>
-                    <option value="1">Semester 1</option>
-<option value="2">Semester 2</option>
-<option value="3">Semester 3</option>
-<option value="4">Semester 4</option>
-<option value="5">Semester 5</option>
-<option value="6">Semester 6</option>
-<option value="7">Semester 7</option>
-<option value="8">Semester 8</option>
-<option value="9">Semester 9</option>
-<option value="10">Semester 10</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="type-filter">Resource Type</label>
-                <select id="type-filter">
-                    <option value="">All Types</option>
-                    <option value="Notes">Notes</option>
-                    <option value="Study Material">Study Material</option>
-                    <option value="Question Paper">Question Paper</option>
-                    <option value="Assignment">Assignment</option>
-                    <option value="E-Book">E-Book</option>
-                </select>
-            </div>
-
-            <button type="button" class="btn btn-primary" onclick="filterResources()">
-    Search
-</button>
-
-        </div>
-    </section>
-
-
-  <!-- ================= NOTES & STUDY MATERIAL ================= -->
-<section class="section">
-
-    <div class="section-heading">
-        <h2>📚 Notes & Study Material</h2>
-        <p>Access notes and study material shared by students.</p>
+  <!-- Notes and study material -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Notes and study material</h2>
+      <p>Shared by students across departments.</p>
     </div>
 
     <div class="resource-grid">
-
-        {% for resource in resources %}
-
-        <div class="resource-card">
-
-            <div class="card-icon">📚</div>
-
-            <div class="card-content">
-
-                <h3>{{ resource.title }}</h3>
-
-                <p>
-                    <strong>Subject:</strong>
-                    {{ resource.subject }}
-                </p>
-
-                <p>
-                    <strong>Semester:</strong>
-                    {{ resource.semester }}
-                </p>
-
-                <p>
-                    <strong>Type:</strong>
-                    {{ resource.resource_type }}
-                </p>
-
-                <p>
-                    <strong>Uploaded by:</strong>
-                    {{ resource.uploaded_by }}
-                </p>
-
-                <p>
-                    <strong>Date:</strong>
-                    {{ resource.uploaded_at.strftime('%d %b %Y') }}
-                </p>
-
-            </div>
-
-            <a href="{{ url_for('download_resource', resource_id=resource.resource_id) }}"
-               class="btn btn-download">
-                ⬇ Download
-            </a>
-
+      {% for resource in resources %}
+      <div class="resource-card">
+        <svg class="doc-icon" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg>
+        <div class="card-content">
+          <h3>{{ resource.title }}</h3>
+          <p><strong>Subject:</strong> {{ resource.subject }}</p>
+          <p><strong>Semester:</strong> {{ resource.semester }}</p>
+          <p><strong>Type:</strong> {{ resource.resource_type }}</p>
+          <p><strong>Uploaded by:</strong> {{ resource.uploaded_by }}</p>
+          <p><strong>Date:</strong> {{ resource.uploaded_at.strftime('%d %b %Y') }}</p>
         </div>
+        <a href="{{ url_for('download_resource', resource_id=resource.resource_id) }}" class="btn ghost">Download</a>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">&#128269;</div>
+        <h3>No resources yet</h3>
+        <p>Be the first to upload something for your batch.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
 
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">&#128269;</div>
-                <h3>No resources found</h3>
-                <p>There are no study resources available yet.</p>
-            </div>        {% endfor %}
-
+  <!-- Upload resource -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Upload a resource</h2>
+      <p>Share useful material with other students. PDF, DOC or DOCX, up to 10 MB.</p>
     </div>
 
-</section>
-
-
-    <!-- ================= UPLOAD RESOURCE ================= -->
-    <section class="section upload-section">
-
-        <div class="section-heading">
-            <h2>📤 Upload Resource</h2>
-            <p>Share useful study material with other students.</p>
-        </div>
-
-        <form class="upload-form"
-      method="POST"
-      action="{{ url_for('upload_resource') }}"
-      enctype="multipart/form-data">
-
-            <div class="form-group">
-                <label for="resource-title">Resource Title</label>
-                <input
-                    type="text"
-                    id="resource-title"
-                    name="title"
-                    placeholder="Enter resource title"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="resource-subject">Subject</label>
-                <input
-                    type="text"
-                    id="resource-subject"
-                    name="subject"
-                    placeholder="Enter subject"
-                >
-            </div>
-
-            <div class="form-group">
-                <label for="resource-semester">Semester</label>
-                <select id="resource-semester" name="semester">
-                    <option value="">All Semesters</option>
-                   <option value="1">Semester 1</option>
-                   <option value="2">Semester 2</option>
-                   <option value="3">Semester 3</option>
-<option value="4">Semester 4</option>
-<option value="5">Semester 5</option>
-<option value="6">Semester 6</option>
-<option value="7">Semester 7</option>
-<option value="8">Semester 8</option>
-<option value="9">Semester 9</option>
-<option value="10">Semester 10</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="resource-type">Resource Type</label>
-                <select id="resource-type" name="resource_type">
-                    <option value="">Select Type</option>
-                    <option value="Notes">Notes</option>
-                    <option value="Study Material">Study Material</option>
-                    <option value="Question Paper">Question Paper</option>
-                    <option value="Assignment">Assignment</option>
-                    <option value="E-Book">E-Book</option>
-                </select>
-            </div>
-
-            <div class="form-group file-group">
-                <label for="resource-file">Choose File</label>
-                <input type="file" id="resource-file" name="file">
-            </div>
-
-            <button type="submit" class="btn btn-primary upload-btn">
-                📤 Upload Resource
-            </button>
-
-        </form>
-
-    </section>
-
-
-    <!-- ================= PREVIOUS QUESTION PAPERS ================= -->
-    <section class="section">
-
-        <div class="section-heading">
-            <h2>📝 Previous Question Papers</h2>
-            <p>Practice with previous university and college examination papers.</p>
-        </div>
-
-       <form class="upload-form"
-      method="POST"
-      action="{{ url_for('upload_question_paper') }}"
-      enctype="multipart/form-data">
-
-    <div class="form-group">
-        <label>Paper Title</label>
-        <input type="text" name="title" placeholder="e.g. Data Structures" required>
-    </div>
-
-    <div class="form-group">
-        <label>Department</label>
-        <input type="text" name="department" placeholder="e.g. Computer Applications" required>
-    </div>
-
-    <div class="form-group">
-        <label>Subject</label>
-        <input type="text" name="subject" placeholder="e.g. Data Structures" required>
-    </div>
-
-    <div class="form-group">
-        <label>Semester</label>
-        <select name="semester" required>
-            <option value="">All Semesters</option>
-           <option value="1">Semester 1</option>
-<option value="2">Semester 2</option>
-<option value="3">Semester 3</option>
-<option value="4">Semester 4</option>
-<option value="5">Semester 5</option>
-<option value="6">Semester 6</option>
-<option value="7">Semester 7</option>
-<option value="8">Semester 8</option>
-<option value="9">Semester 9</option>
-<option value="10">Semester 10</option>
+    <form class="grid-form" method="POST" action="{{ url_for('upload_resource') }}" enctype="multipart/form-data" style="margin-bottom:0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="resource-title">Title</label>
+        <input type="text" id="resource-title" name="title" placeholder="e.g. Unit 3 notes" required>
+      </div>
+      <div class="field">
+        <label for="resource-subject">Subject</label>
+        <input type="text" id="resource-subject" name="subject" placeholder="e.g. Data Structures" required>
+      </div>
+      <div class="field">
+        <label for="resource-semester">Semester</label>
+        <select id="resource-semester" name="semester" required>
+          <option value="">Select semester</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+          <option value="9">Semester 9</option>
+          <option value="10">Semester 10</option>
         </select>
-    </div>
-
-    <div class="form-group">
-        <label>Exam Type</label>
-        <select name="exam_type" required>
-            <option value="">Select Exam Type</option>
-            <option value="Mid Semester">Mid Semester</option>
-            <option value="End Semester">End Semester</option>
+      </div>
+      <div class="field">
+        <label for="resource-type">Type</label>
+        <select id="resource-type" name="resource_type" required>
+          <option value="">Select type</option>
+          <option value="Notes">Notes</option>
+          <option value="Study Material">Study Material</option>
+          <option value="Question Paper">Question Paper</option>
+          <option value="Assignment">Assignment</option>
+          <option value="E-Book">E-Book</option>
         </select>
+      </div>
+      <div class="field full">
+        <label for="resource-file">File</label>
+        <input type="file" id="resource-file" name="file" accept=".pdf,.doc,.docx" required>
+      </div>
+      <button type="submit" class="btn">Upload resource</button>
+    </form>
+  </section>
+
+  <!-- Question papers -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Previous question papers</h2>
+      <p>Practise with earlier mid and end semester papers.</p>
     </div>
 
-    <div class="form-group">
-        <label>Exam Year</label>
-        <input type="number"
-               name="exam_year"
-               min="2000"
-               max="2100"
-               placeholder="e.g. 2025"
-               required>
-    </div>
+    <h3 class="sub-h">Upload a paper</h3>
+    <form class="grid-form" method="POST" action="{{ url_for('upload_question_paper') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="paper-title">Paper title</label>
+        <input type="text" id="paper-title" name="title" placeholder="e.g. Data Structures" required>
+      </div>
+      <div class="field">
+        <label for="paper-department">Department</label>
+        <input type="text" id="paper-department" name="department" placeholder="e.g. Computer Applications" required>
+      </div>
+      <div class="field">
+        <label for="paper-subject">Subject</label>
+        <input type="text" id="paper-subject" name="subject" placeholder="e.g. Data Structures" required>
+      </div>
+      <div class="field">
+        <label for="paper-semester">Semester</label>
+        <select id="paper-semester" name="semester" required>
+          <option value="">Select semester</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+          <option value="9">Semester 9</option>
+          <option value="10">Semester 10</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="paper-exam-type">Exam type</label>
+        <select id="paper-exam-type" name="exam_type" required>
+          <option value="">Select exam type</option>
+          <option value="Mid Semester">Mid Semester</option>
+          <option value="End Semester">End Semester</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="paper-year">Exam year</label>
+        <input type="number" id="paper-year" name="exam_year" min="2000" max="2100" placeholder="e.g. 2025" required>
+      </div>
+      <div class="field full">
+        <label for="paper-file">Question paper file</label>
+        <input type="file" id="paper-file" name="file" accept=".pdf,.doc,.docx" required>
+      </div>
+      <button type="submit" class="btn">Upload question paper</button>
+    </form>
 
-    <div class="form-group file-group">
-        <label>Question Paper File</label>
-        <input type="file" name="file" required>
-    </div>
-
-    <button type="submit" class="btn btn-primary upload-btn">
-        📤 Upload Question Paper
-    </button>
-
-</form>
-<div class="filter-box" style="margin-bottom: 20px;">
-
-    <div class="form-group search-group">
-        <label>Search Paper</label>
-        <input type="text"
-               id="paper-search"
-               placeholder="Search by title..."
+    <h3 class="sub-h">Browse papers</h3>
+    <div class="filters">
+      <div class="field search-group">
+        <label for="paper-search">Search</label>
+        <input type="text" id="paper-search" placeholder="Search by title"
                onkeydown="if(event.key === 'Enter') filterPapers()">
-    </div>
-
-    <div class="form-group">
-        <label>Semester</label>
+      </div>
+      <div class="field">
+        <label for="paper-semester-filter">Semester</label>
         <select id="paper-semester-filter">
-            <option value="1">Semester 1</option>
-<option value="2">Semester 2</option>
-<option value="3">Semester 3</option>
-<option value="4">Semester 4</option>
-<option value="5">Semester 5</option>
-<option value="6">Semester 6</option>
-<option value="7">Semester 7</option>
-<option value="8">Semester 8</option>
-<option value="9">Semester 9</option>
-<option value="10">Semester 10</option>
+          <option value="">All</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+          <option value="9">Semester 9</option>
+          <option value="10">Semester 10</option>
         </select>
-    </div>
-
-    <div class="form-group">
-        <label>Exam Type</label>
+      </div>
+      <div class="field">
+        <label for="paper-type-filter">Exam type</label>
         <select id="paper-type-filter">
-            <option value="">All</option>
-            <option value="Mid Semester">Mid Semester</option>
-            <option value="End Semester">End Semester</option>
+          <option value="">All</option>
+          <option value="Mid Semester">Mid Semester</option>
+          <option value="End Semester">End Semester</option>
         </select>
-    </div>
-
-    <div class="form-group">
-        <label>Year</label>
+      </div>
+      <div class="field">
+        <label for="paper-year-filter">Year</label>
         <select id="paper-year-filter">
-            <option value="">All</option>
-            <option value="2026">2026</option>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
+          <option value="">All</option>
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
         </select>
+      </div>
+      <button type="button" class="btn" onclick="filterPapers()">Search</button>
     </div>
 
-    <button type="button"
-            class="btn btn-primary"
-            onclick="filterPapers()">
-        Search
-    </button>
-
-</div>
-        <div class="papers-list">
-
-    {% for paper in question_papers %}
-
-    <div class="paper-card">
-
-        <div class="paper-icon">📄</div>
-
+    <div class="papers-list">
+      {% for paper in question_papers %}
+      <div class="paper-card">
+        <svg class="doc-icon" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg>
         <div class="paper-details">
-            <h3>{{ paper.title }}</h3>
-
-            <p>
-                Semester {{ paper.semester }}
-                <span>|</span>
-                {{ paper.exam_year }}
-                <span>|</span>
-                {{ paper.exam_type }}
-            </p>
-
-            <p>
-                <strong>Subject:</strong> {{ paper.subject }}
-                <span>|</span>
-                <strong>Department:</strong> {{ paper.department }}
-            </p>
-
-            <p>
-                <strong>Uploaded by:</strong> {{ paper.uploaded_by }}
-            </p>
+          <h3>{{ paper.title }}</h3>
+          <p>Semester {{ paper.semester }} <span>|</span> {{ paper.exam_year }} <span>|</span> {{ paper.exam_type }}</p>
+          <p><strong>Subject:</strong> {{ paper.subject }} <span>|</span> <strong>Department:</strong> {{ paper.department }}</p>
+          <p><strong>Uploaded by:</strong> {{ paper.uploaded_by }}</p>
         </div>
-
-        <a href="{{ url_for('download_question_paper', paper_id=paper.paper_id) }}"
-           class="btn btn-download">
-            ⬇ Download Paper
-        </a>
-
+        <a href="{{ url_for('download_question_paper', paper_id=paper.paper_id) }}" class="btn ghost">Download</a>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">&#128269;</div>
+        <h3>No question papers yet</h3>
+        <p>Upload a paper to help your batch prepare.</p>
+      </div>
+      {% endfor %}
     </div>
-
-    {% endfor %}
-
-</div>
-
-    </section>
+  </section>
 
 </main>
+<footer class="site-foot">&copy; 2026 CampusConnect</footer>
+{% endblock %}
 
-
-<!-- Footer -->
-<footer class="footer">
-    <p>© 2026 CampusConnect | Student Community Platform</p>
-</footer>
-
+{% block scripts %}
 <script>
+function val(id) {
+    return document.getElementById(id).value.toLowerCase().trim();
+}
+
+function showNoResults(boxSel, itemSel, msgId, title) {
+    const box = document.querySelector(boxSel);
+    const items = document.querySelectorAll(itemSel);
+    if (!box || items.length === 0) return;
+
+    const anyVisible = Array.from(items).some(i => i.style.display !== "none");
+    let msg = document.getElementById(msgId);
+
+    if (!anyVisible) {
+        if (!msg) {
+            msg = document.createElement("div");
+            msg.id = msgId;
+            msg.className = "empty-state";
+            msg.innerHTML = '<div class="empty-icon">&#128269;</div><h3>' + title +
+                            '</h3><p>Try changing your search or filters.</p>';
+            box.appendChild(msg);
+        }
+    } else if (msg) {
+        msg.remove();
+    }
+}
+
 function filterResources() {
-    const searchText = document.getElementById("search").value
-        .toLowerCase()
-        .trim();
+    const q = val("search");
+    const subject = val("subject-filter");
+    const sem = val("semester-filter");
+    const type = val("type-filter");
 
-    const subject = document.getElementById("subject-filter").value
-        .toLowerCase();
-
-    const semester = document.getElementById("semester-filter").value;
-
-    const type = document.getElementById("type-filter").value
-        .toLowerCase();
-
-    const cards = document.querySelectorAll(".resource-card");
-
-    cards.forEach(card => {
+    document.querySelectorAll(".resource-card").forEach(card => {
         const title = card.querySelector("h3").innerText.toLowerCase();
-        const cardText = card.innerText.toLowerCase();
+        const text = card.innerText.toLowerCase();
 
-       const matchesSearch =
-    searchText === "" ||
-    title.includes(searchText);
+        const ok =
+            (!q || title.includes(q)) &&
+            (!subject || text.includes(subject)) &&
+            (!sem || new RegExp("semester: " + sem + "\\b").test(text)) &&
+            (!type || text.includes(type));
 
-        const matchesSubject =
-            subject === "" ||
-            cardText.includes(subject);
-
-        const matchesSemester =
-            semester === "" ||
-            cardText.includes("semester: " + semester);
-
-        const matchesType =
-            type === "" ||
-            cardText.includes(type);
-
-        card.style.display =
-            matchesSearch &&
-            matchesSubject &&
-            matchesSemester &&
-            matchesType
-                ? "flex"
-                : "none";
+        card.style.display = ok ? "flex" : "none";
     });
 
-    showResourceNoResults();
+    showNoResults(".resource-grid", ".resource-card", "resource-no-results-message", "No resources found");
 }
-</script>
-<script>
+
 function filterPapers() {
-    const searchText = document.getElementById("paper-search").value
-        .toLowerCase()
-        .trim();
+    const q = val("paper-search");
+    const sem = val("paper-semester-filter");
+    const examType = val("paper-type-filter");
+    const year = val("paper-year-filter");
 
-    const semester = document.getElementById("paper-semester-filter").value;
-
-    const examType = document.getElementById("paper-type-filter").value
-        .toLowerCase();
-
-    const year = document.getElementById("paper-year-filter").value;
-
-    const papers = document.querySelectorAll(".paper-card");
-
-    papers.forEach(paper => {
+    document.querySelectorAll(".paper-card").forEach(paper => {
         const title = paper.querySelector("h3").innerText.toLowerCase();
-        const paperText = paper.innerText.toLowerCase();
+        const text = paper.innerText.toLowerCase();
 
-        const matchesSearch =
-            searchText === "" ||
-            title.includes(searchText);
+        const ok =
+            (!q || title.includes(q)) &&
+            (!sem || new RegExp("semester " + sem + "\\b").test(text)) &&
+            (!examType || text.includes(examType)) &&
+            (!year || text.includes(year));
 
-        const matchesSemester =
-            semester === "" ||
-            paperText.includes("semester " + semester);
-
-        const matchesExamType =
-            examType === "" ||
-            paperText.includes(examType);
-
-        const matchesYear =
-            year === "" ||
-            paperText.includes(year);
-
-        if (
-            matchesSearch &&
-            matchesSemester &&
-            matchesExamType &&
-            matchesYear
-        ) {
-            paper.style.display = "flex";
-        } else {
-            paper.style.display = "none";
-        }
+        paper.style.display = ok ? "flex" : "none";
     });
 
-    showPaperNoResults();
+    showNoResults(".papers-list", ".paper-card", "paper-no-results-message", "No question papers found");
 }
 </script>
-<script id="resource-no-results">
-function showResourceNoResults() {
-    const grid = document.querySelector(".resource-grid");
-    const cards = document.querySelectorAll(".resource-card");
-
-    if (!grid || cards.length === 0) {
-        return;
-    }
-
-    const visibleCards = Array.from(cards).filter(
-        card => card.style.display !== "none"
-    );
-
-    let message = document.getElementById("resource-no-results-message");
-
-    if (visibleCards.length === 0) {
-        if (!message) {
-            message = document.createElement("div");
-            message.id = "resource-no-results-message";
-            message.className = "empty-state";
-            message.innerHTML = `
-                <div class="empty-icon">&#128269;</div>
-                <h3>No resources found</h3>
-                <p>Try changing your search or filters.</p>
-            `;
-            grid.appendChild(message);
-        }
-    } else if (message) {
-        message.remove();
-    }
-}
-</script>
-<script>
-function showPaperNoResults() {
-    const list = document.querySelector(".papers-list");
-    const papers = document.querySelectorAll(".paper-card");
-
-    if (!list || papers.length === 0) {
-        return;
-    }
-
-    const visiblePapers = Array.from(papers).filter(
-        paper => paper.style.display !== "none"
-    );
-
-    let message = document.getElementById("paper-no-results-message");
-
-    if (visiblePapers.length === 0) {
-        if (!message) {
-            message = document.createElement("div");
-            message.id = "paper-no-results-message";
-            message.className = "empty-state";
-            message.innerHTML = `
-                <div class="empty-icon">&#128269;</div>
-                <h3>No question papers found</h3>
-                <p>Try changing your search or filters.</p>
-            `;
-            list.appendChild(message);
-        }
-    } else if (message) {
-        message.remove();
-    }
-}
-</script>
-</body>
-</html>
+{% endblock %}
 
 
 

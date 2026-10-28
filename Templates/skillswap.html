@@ -1,0 +1,199 @@
+
+{% extends "base.html" %}
+{% block title %}SkillSwap | CampusConnect{% endblock %}
+
+{% block content %}
+<main class="page">
+
+  <div class="res-head">
+    <h1>SkillSwap</h1>
+    <p>Learn from students. Share what you know.</p>
+  </div>
+
+  <!-- Find a skill -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Find a skill</h2>
+      <p>Search for something you want to learn.</p>
+    </div>
+
+    <div class="filters four" style="margin-bottom:0">
+      <div class="field search-group">
+        <label for="skill-search">Search</label>
+        <input type="text" id="skill-search" placeholder="e.g. Python, C++, Web Development"
+               onkeydown="if(event.key === 'Enter') filterSkills()">
+      </div>
+      <div class="field">
+        <label for="category-filter">Category</label>
+        <select id="category-filter">
+          <option value="">All categories</option>
+          <option value="Programming">Programming</option>
+          <option value="Design">Design</option>
+          <option value="Communication">Communication</option>
+          <option value="Academic">Academic</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="level-filter">Level</label>
+        <select id="level-filter">
+          <option value="">All levels</option>
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+        </select>
+      </div>
+      <button type="button" class="btn" onclick="filterSkills()">Search</button>
+    </div>
+  </section>
+
+  <!-- Skills available -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Skills available</h2>
+      <p>Offered by students on your campus.</p>
+    </div>
+
+    <div class="skill-grid" id="skill-grid">
+
+      <div class="skill-card" data-category="Programming" data-level="Intermediate">
+        <div class="skill-top">
+          <svg class="doc-icon" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4"/></svg>
+          <div><h3>Python Programming</h3><span class="by">Rahul</span></div>
+        </div>
+        <div class="tags"><span class="tag">Programming</span><span class="tag">Intermediate</span></div>
+        <p class="desc">I can help with Python basics, functions and projects.</p>
+        <button type="button" class="btn ghost">Request to learn</button>
+      </div>
+
+      <div class="skill-card" data-category="Programming" data-level="Advanced">
+        <div class="skill-top">
+          <svg class="doc-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+          <div><h3>Web Development</h3><span class="by">Priya</span></div>
+        </div>
+        <div class="tags"><span class="tag">Programming</span><span class="tag">Advanced</span></div>
+        <p class="desc">HTML, CSS and JavaScript fundamentals and frontend projects.</p>
+        <button type="button" class="btn ghost">Request to learn</button>
+      </div>
+
+      <div class="skill-card" data-category="Design" data-level="Intermediate">
+        <div class="skill-top">
+          <svg class="doc-icon" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg>
+          <div><h3>Graphic Design</h3><span class="by">Ananya</span></div>
+        </div>
+        <div class="tags"><span class="tag">Design</span><span class="tag">Intermediate</span></div>
+        <p class="desc">Canva, basic UI design and presentation design.</p>
+        <button type="button" class="btn ghost">Request to learn</button>
+      </div>
+
+      <div class="skill-card" data-category="Communication" data-level="Advanced">
+        <div class="skill-top">
+          <svg class="doc-icon" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>
+          <div><h3>Public Speaking</h3><span class="by">Sneha</span></div>
+        </div>
+        <div class="tags"><span class="tag">Communication</span><span class="tag">Advanced</span></div>
+        <p class="desc">Improve confidence, presentations and communication skills.</p>
+        <button type="button" class="btn ghost">Request to learn</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Offer a skill -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Offer a skill</h2>
+      <p>Share something you know and help another student learn.</p>
+    </div>
+
+    <form class="grid-form" style="margin-bottom:0">
+      <div class="field">
+        <label for="skill-name">Skill name</label>
+        <input type="text" id="skill-name" placeholder="e.g. C++, Photoshop" required>
+      </div>
+      <div class="field">
+        <label for="skill-category">Category</label>
+        <select id="skill-category" required>
+          <option value="">Select category</option>
+          <option value="Programming">Programming</option>
+          <option value="Design">Design</option>
+          <option value="Communication">Communication</option>
+          <option value="Academic">Academic</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="skill-level">Level</label>
+        <select id="skill-level" required>
+          <option value="">Select level</option>
+          <option value="Beginner">Beginner</option>
+          <option value="Intermediate">Intermediate</option>
+          <option value="Advanced">Advanced</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label for="skill-description">What can you teach?</label>
+        <textarea id="skill-description" rows="4" placeholder="Describe what you can help other students with"></textarea>
+      </div>
+      <button type="submit" class="btn">Add my skill</button>
+    </form>
+  </section>
+
+  <!-- My requests -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>My requests</h2>
+      <p>Track the skills you have asked to learn.</p>
+    </div>
+
+    <div class="request-list">
+      <div class="request-card">
+        <div><h3>Python Programming</h3><p>Requested from Rahul</p></div>
+        <span class="pill pending">Pending</span>
+      </div>
+      <div class="request-card">
+        <div><h3>Graphic Design</h3><p>Requested from Ananya</p></div>
+        <span class="pill accepted">Accepted</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer class="site-foot">&copy; 2026 CampusConnect</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterSkills() {
+    const q = document.getElementById("skill-search").value.toLowerCase().trim();
+    const category = document.getElementById("category-filter").value;
+    const level = document.getElementById("level-filter").value;
+
+    const cards = document.querySelectorAll(".skill-card");
+    let visible = 0;
+
+    cards.forEach(card => {
+        const ok =
+            (!q || card.innerText.toLowerCase().includes(q)) &&
+            (!category || card.dataset.category === category) &&
+            (!level || card.dataset.level === level);
+
+        card.style.display = ok ? "flex" : "none";
+        if (ok) visible++;
+    });
+
+    const grid = document.getElementById("skill-grid");
+    let msg = document.getElementById("skill-no-results");
+
+    if (visible === 0 && !msg) {
+        msg = document.createElement("div");
+        msg.id = "skill-no-results";
+        msg.className = "empty-state";
+        msg.innerHTML = '<div class="empty-icon">&#128269;</div><h3>No skills found</h3><p>Try changing your search or filters.</p>';
+        grid.appendChild(msg);
+    } else if (visible > 0 && msg) {
+        msg.remove();
+    }
+}
+</script>
+{% endblock %}

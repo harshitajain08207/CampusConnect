@@ -1,220 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>CampusConnect</title>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-
-<body>
-
-    <!-- NAVBAR -->
-    <header class="navbar">
-
-        <div class="logo">
-            🎓 CampusConnect
-        </div>
-
-        <nav>
-            <a href="#">Home</a>
-            <a href="#features">Features</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
-        </nav>
-
-        <div class="nav-buttons">
-            <a href="{{ url_for('login') }}" class="login-btn">Login</a>
-            <a href="{{ url_for('register') }}" class="primary-btn">
-    Get Started
-</a>
-        </div>
-
-    </header>
-
-
-    <!-- HERO SECTION -->
-    <section class="hero">
-
-        <div class="hero-content">
-
-            <p class="small-heading">
-                SMART CAMPUS PLATFORM
-            </p>
-
-            <h1>
-                Your Campus.<br>
-                One Connected Platform.
-            </h1>
-
-            <p class="hero-description">
-                A smarter, more connected campus experience
-                for students and teachers.
-            </p>
-
-            <div class="hero-buttons">
-
-                <a href="{{ url_for('register') }}" class="primary-btn">
-                    Get Started
-                </a>
-
-                <a href="#features" class="secondary-btn">
-                    Explore Features
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <!-- Temporary image area -->
-        <div class="hero-image">
-
-            <div class="campus-placeholder">
-                🎓 CampusConnect
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- FEATURES SECTION -->
-    <section class="features" id="features">
-
-        <h2>
-            Everything Your Campus Needs
-        </h2>
-
-        <p class="section-description">
-            One platform for academic resources,
-            student connections and campus services.
-        </p>
-
-
-        <div class="feature-grid">
-
-            <!-- Feature 1 -->
-            <a href="{{ url_for('resources') }}" class="feature-card">
-    <div class="feature-icon">📚</div>
-    <h3>Study Resources</h3>
-    <p>Access notes and previous question papers easily.</p>
-</a>
-
-
-            <!-- Feature 2 -->
-            <div class="feature-card">
-
-                <div class="icon">🤝</div>
-
-                <h3>
-                    SkillSwap
-                </h3>
-
-                <p>
-                    Learn from students and share
-                    your own skills.
-                </p>
-
-            </div>
-
-
-            <!-- Feature 3 -->
-            <div class="feature-card">
-
-                <div class="icon">🔎</div>
-
-                <h3>
-                    Lost & Found
-                </h3>
-
-                <p>
-                    Report and find lost items
-                    around campus.
-                </p>
-
-            </div>
-
-
-            <!-- Feature 4 -->
-            <div class="feature-card">
-
-                <div class="icon">👨‍🏫</div>
-
-                <h3>
-                    Teacher Availability
-                </h3>
-
-                <p>
-                    Find teachers according
-                    to their availability.
-                </p>
-
-            </div>
-
-
-            <!-- Feature 5 -->
-            <div class="feature-card">
-
-                <div class="icon">📢</div>
-
-                <h3>
-                    Announcements
-                </h3>
-
-                <p>
-                    Stay updated with important
-                    campus news.
-                </p>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- FOOTER -->
-    <footer>
-
-        <div class="logo">
-            🎓 CampusConnect
-        </div>
-
-        <p>
-            Your campus. One connected platform.
-        </p>
-
-        <p>
-            © 2026 CampusConnect
-        </p>
-
-    </footer>
-    <script>
-    const revealElements = document.querySelectorAll(
-        "section, .feature-card"
-    );
-
-    const revealOnScroll = () => {
-        revealElements.forEach((element) => {
-
-            const position = element.getBoundingClientRect().top;
-
-            if (position < window.innerHeight - 100) {
-                element.classList.add("show");
-            }
-
-        });
-    };
-
-    window.addEventListener("scroll", revealOnScroll);
-
-    revealOnScroll();
-</script>
-
-</body>
-
-</html>
+{% extends "base.html" %}
+{% block title %}CampusConnect{% endblock %}
+
+{% block content %}
+<main class="page">
+  <section class="hero hero-lg">
+    <h1>Your campus. One connected platform.</h1>
+    <p>Study resources, skills, lost items and teachers for students and staff, in one place.</p>
+        <div class="cta">
+      {% if session.get('user_id') %}
+        <a class="btn lg" href="{{ url_for('dashboard') }}">Go to dashboard</a>
+      {% else %}
+        <a class="btn lg" href="{{ url_for('register') }}">Get started</a>
+      {% endif %}
+      <a class="btn ghost lg" href="#features">See what's inside</a>
+    </div>
+    <svg class="skyline" viewBox="0 0 1200 96" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true">
+      <path d="M0 95H1200"/>
+      <path d="M40 95V62h70v33M60 62V50h30v12M75 50V38"/>
+      <path d="M170 95V48h50v47M180 60h8M200 60h8M180 76h8M200 76h8"/>
+      <path d="M290 95V70a45 45 0 0 1 90 0v25M335 25v13M322 95V75h26v20"/>
+      <path d="M430 95V30h36v65M448 30V14M436 44h24M448 56a8 8 0 1 1 0 .1"/>
+      <path d="M520 95V58h120v37M540 74h14M570 74h14M600 74h14"/>
+      <circle cx="690" cy="72" r="18"/><path d="M690 90v5"/>
+      <path d="M740 95V54h100v41M760 54V40h60v14M770 78h12M798 78h12"/>
+      <path d="M890 95V66a36 36 0 0 1 72 0v29M926 30v12"/>
+      <circle cx="1010" cy="74" r="16"/><path d="M1010 90v5"/>
+      <path d="M1060 95V50h90v45M1075 66h12M1100 66h12M1125 66h12"/>
+    </svg>
+  </section>
+
+  <section class="feat" id="features">
+    <h2>Everything your campus needs</h2>
+    <p>Sign in once and use every service from a single dashboard.</p>
+    <div class="feat-grid">
+      <div class="tile">
+        <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 2h13"/></svg>
+        <h2>Study Resources</h2>
+        <p>Notes and previous question papers, sorted by subject and semester.</p>
+      </div>
+      <div class="tile">
+        <svg viewBox="0 0 24 24"><path d="M7 8h12l-3-3M17 16H5l3 3"/></svg>
+        <h2>SkillSwap</h2>
+        <p>Teach a skill you know and learn one you don't.</p>
+      </div>
+      <div class="tile">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4-4"/></svg>
+        <h2>Lost &amp; Found</h2>
+        <p>Report lost items and find what others have picked up.</p>
+        <span class="badge">Coming soon</span>
+      </div>
+      <div class="tile">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <h2>Teacher Availability</h2>
+        <p>See when teachers are free and where to find them.</p>
+        <span class="badge">Coming soon</span>
+      </div>
+      <div class="tile">
+        <svg viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></svg>
+        <h2>Announcements</h2>
+        <p>Important campus news, without digging through group chats.</p>
+        <span class="badge">Coming soon</span>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="site-foot">&copy; 2026 CampusConnect</footer>
+{% endblock %}
