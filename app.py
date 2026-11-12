@@ -3,6 +3,11 @@ from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from werkzeug.security import check_password_hash, generate_password_hash
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import smtplib
+from email.message import EmailMessage
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 import mysql.connector
 import os
 import uuid
@@ -395,6 +400,292 @@ def download_question_paper(paper_id):
         as_attachment=True,
         download_name=paper["file_name"]
     )
+LF_CATEGORIES = ["Electronics", "Documents", "Books", "Clothing", "Accessories", "Other"]
+
+
+def item_text(i):
+    return f'{i["title"]} {i["title"]} {i["category"]} {i["location"]} {i["description"]}'
+
+
+def find_matches(items, user_id, limit=3, threshold=0.25):
+    mine = [i for i in items if i["reported_by"] == user_id]
+    if not mine or len(items) < 2:
+        return {}
+
+    try:
+        vectorizer = TfidfVectorizer(stop_words="english")
+        matrix = vectorizer.fit_transform([item_text(i) for i in items])
+    except ValueError:
+        return {}
+
+    position = {i["item_id"]: n for n, i in enumerate(items)}
+    result = {}
+
+    for m in mine:
+        sims = cosine_similarity(matrix[position[m["item_id"]]], matrix)[0]
+        scored = []
+        for n, other in enumerate(items):
+            if other["item_type"] == m["item_type"] or other["reported_by"] == user_id:
+                continue
+            score = sims[n] + (0.15 if other["category"] == m["category"] else 0)
+            if score >= threshold:
+                scored.append((round(min(score, 1) * 100), other))
+        scored.sort(key=lambda s: s[0], reverse=True)
+        if scored:
+            result[m["item_id"]] = scored[:limit]
+
+    return result
+
+
+@app.route("/lostandfound")
+def lostandfound():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    q = request.args.get("q", "").strip()
+    item_type = request.args.get("type", "")
+    category = request.args.get("category", "")
+
+    sql = """
+        SELECT i.item_id, i.item_type, i.title, i.category, i.description,
+               i.location, i.event_date, i.status, i.reported_by,
+               u.full_name AS reporter
+        FROM lost_found_items i
+        JOIN users u ON i.reported_by = u.user_id
+        WHERE i.status = 'open'
+    """
+    params = []
+
+    if q:
+        sql += " AND (i.title LIKE %s OR i.description LIKE %s)"
+        params += [f"%{q}%", f"%{q}%"]
+    if item_type in ("lost", "found"):
+        sql += " AND i.item_type = %s"
+        params.append(item_type)
+    if category in LF_CATEGORIES:
+        sql += " AND i.category = %s"
+        params.append(category)
+
+    sql += " ORDER BY i.created_at DESC"
+
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(sql, params)
+    items = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT item_id, item_type, title, category, description, location,
+               event_date, reported_by, verify_question
+        FROM lost_found_items
+        WHERE status = 'open'
+    """)
+    open_items = cursor.fetchall()
+    cursor.close()
+
+    user_id = session["user_id"]
+    matches = find_matches(open_items, user_id)
+    my_items = [i for i in open_items if i["reported_by"] == user_id]
+
+    return render_template(
+        "lostandfound.html",
+        items=items,
+        categories=LF_CATEGORIES,
+        q=q,
+        item_type=item_type,
+        category=category,
+        matches=matches,
+        my_items=my_items
+    )
+
+
+@app.route("/lostandfound/report", methods=["POST"])
+def report_item():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    item_type = request.form["item_type"]
+    title = request.form["title"].strip()
+    category = request.form["category"]
+    description = request.form["description"].strip()
+    location = request.form["location"].strip()
+    event_date = request.form["event_date"]
+    verify_question = request.form.get("verify_question", "").strip() or None
+    verify_answer = request.form.get("verify_answer", "").strip().lower() or None
+
+    if (item_type not in ("lost", "found") or category not in LF_CATEGORIES
+            or not title or not description or not location or not event_date):
+        flash("Please fill in all the required fields.", "error")
+        return redirect(url_for("lostandfound"))
+
+    cursor = db.cursor()
+    cursor.execute(
+        """
+        INSERT INTO lost_found_items
+        (item_type, title, category, description, location, event_date,
+         verify_question, verify_answer, reported_by)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """,
+        (item_type, title, category, description, location, event_date,
+         verify_question, verify_answer, session["user_id"])
+    )
+    db.commit()
+    cursor.close()
+
+    flash("Your report has been added.", "success")
+    return redirect(url_for("lostandfound"))
+
+
+@app.route("/lostandfound/<int:item_id>/resolve", methods=["POST"])
+def resolve_item(item_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    cursor = db.cursor()
+    cursor.execute(
+        "UPDATE lost_found_items SET status = 'returned' "
+        "WHERE item_id = %s AND reported_by = %s",
+        (item_id, session["user_id"])
+    )
+    db.commit()
+    changed = cursor.rowcount
+    cursor.close()
+
+    if changed:
+        flash("Marked as returned. Thank you!", "success")
+    else:
+        flash("You can only close your own reports.", "error")
+    return redirect(url_for("lostandfound"))
+
+
+@app.route("/lostandfound/<int:item_id>/claim", methods=["POST"])
+@limiter.limit("5 per minute")
+def claim_item(item_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    answer = request.form.get("answer", "").strip().lower()
+
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        SELECT i.verify_answer, i.reported_by, i.title, u.full_name, u.email
+        FROM lost_found_items i
+        JOIN users u ON i.reported_by = u.user_id
+        WHERE i.item_id = %s AND i.item_type = 'found' AND i.status = 'open'
+        """,
+        (item_id,)
+    )
+    item = cursor.fetchone()
+
+    if not item or item["reported_by"] == session["user_id"]:
+        cursor.close()
+        flash("This item is not available to claim.", "error")
+        return redirect(url_for("lostandfound"))
+
+    if item["verify_answer"] and answer != item["verify_answer"]:
+        cursor.close()
+        flash("That answer does not match. Please try again.", "error")
+        return redirect(url_for("lostandfound"))
+
+    cursor.execute(
+        "UPDATE lost_found_items SET status = 'claimed' WHERE item_id = %s",
+        (item_id,)
+    )
+    db.commit()
+    cursor.close()
+
+    flash(
+        f"Verified! Contact {item['full_name']} at {item['email']} "
+        f"to collect your {item['title']}. Save these details now.",
+        "success"
+    )
+    return redirect(url_for("lostandfound"))
+serializer = URLSafeTimedSerializer(app.secret_key)
+
+
+def send_reset_email(to_email, link):
+    host = os.getenv("MAIL_HOST")
+    user = os.getenv("MAIL_USER")
+    password = os.getenv("MAIL_PASSWORD")
+
+    # No email settings yet: print the link in the terminal (for testing)
+    if not (host and user and password):
+        print("\n[DEV] Password reset link:", link, "\n")
+        return
+
+    msg = EmailMessage()
+    msg["Subject"] = "Reset your CampusConnect password"
+    msg["From"] = user
+    msg["To"] = to_email
+    msg.set_content(
+        "Open this link to reset your password (valid for 30 minutes):\n\n"
+        f"{link}\n\nIf you did not ask for this, ignore this email."
+    )
+    with smtplib.SMTP_SSL(host, 465) as server:
+        server.login(user, password)
+        server.send_message(msg)
+
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
+def forgot_password():
+    if request.method == "POST":
+        email = request.form["email"].strip().lower()
+
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT user_id, password FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        cursor.close()
+
+        if user:
+            token = serializer.dumps(
+                {"uid": user["user_id"], "pw": user["password"][-10:]},
+                salt="password-reset"
+            )
+            link = url_for("reset_password", token=token, _external=True)
+            send_reset_email(email, link)
+
+        flash("If that email is registered, a reset link has been sent.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("forgot_password.html")
+
+
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    try:
+        data = serializer.loads(token, salt="password-reset", max_age=1800)
+    except (SignatureExpired, BadSignature):
+        flash("This reset link is invalid or has expired.", "error")
+        return redirect(url_for("forgot_password"))
+
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT user_id, password FROM users WHERE user_id = %s", (data["uid"],))
+    user = cursor.fetchone()
+    cursor.close()
+
+    if not user or user["password"][-10:] != data["pw"]:
+        flash("This reset link was already used or is invalid.", "error")
+        return redirect(url_for("forgot_password"))
+
+    if request.method == "POST":
+        new_password = request.form["password"]
+        if len(new_password) < 8:
+            flash("Password must be at least 8 characters.", "error")
+            return redirect(url_for("reset_password", token=token))
+
+        cursor = db.cursor()
+        cursor.execute(
+            "UPDATE users SET password = %s WHERE user_id = %s",
+            (generate_password_hash(new_password), user["user_id"])
+        )
+        db.commit()
+        cursor.close()
+
+        flash("Password updated. You can log in now.", "success")
+        return redirect(url_for("login"))
+
+    return render_template("reset_password.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

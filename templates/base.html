@@ -25,6 +25,7 @@
       <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' else '' }}">Dashboard</a>
       <a href="{{ url_for('resources') }}" class="{{ 'active' if request.endpoint == 'resources' else '' }}">Study resources</a>
       <a href="{{ url_for('skillswap') }}" class="{{ 'active' if request.endpoint == 'skillswap' else '' }}">SkillSwap</a>
+      <a href="{{ url_for('lostandfound') }}" class="{{ 'active' if request.endpoint == 'lostandfound' else '' }}">Lost &amp; Found</a>
     </nav>
     {% endif %}
     <button class="btn ghost" id="themeBtn" type="button" aria-label="Switch light or dark mode">Dark mode</button>

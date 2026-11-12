@@ -1,348 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Lost & Found | CampusConnect{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lost & Found - CampusConnect</title>
+{% block content %}
+<main class="page">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/lost_found.css') }}">
-</head>
+  <div class="res-head">
+    <h1>Lost &amp; Found</h1>
+    <p>Report what you lost or found, and help others get their things back.</p>
+  </div>
 
-<body>
+  <!-- Search -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Search reports</h2>
+      <p>Look for an item by name, type or category.</p>
+    </div>
+    <form class="filters four" method="GET" action="{{ url_for('lostandfound') }}" style="margin-bottom:0">
+      <div class="field search-group">
+        <label for="q">Search</label>
+        <input type="text" id="q" name="q" value="{{ q }}" placeholder="e.g. black wallet, ID card">
+      </div>
+      <div class="field">
+        <label for="type">Type</label>
+        <select id="type" name="type">
+          <option value="">Lost and found</option>
+          <option value="lost" {{ 'selected' if item_type == 'lost' else '' }}>Lost items</option>
+          <option value="found" {{ 'selected' if item_type == 'found' else '' }}>Found items</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          <option value="">All categories</option>
+          {% for c in categories %}
+          <option value="{{ c }}" {{ 'selected' if category == c else '' }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn">Search</button>
+    </form>
+  </section>
+    {% if matches %}
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Possible matches for your reports</h2>
+      <p>Ranked by comparing names, categories, places and descriptions.</p>
+    </div>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">
-            Campus<span>Connect</span>
+    {% for mine in my_items %}
+      {% if matches.get(mine.item_id) %}
+      <h3 class="sub-h">Your {{ mine.item_type }} report: {{ mine.title }}</h3>
+      <div class="request-list" style="margin-bottom:22px">
+        {% for score, other in matches[mine.item_id] %}
+        <div class="request-card">
+          <div>
+            <h3>{{ other.title }}</h3>
+            <p>{{ other.category }} | {{ other.location }} | {{ other.event_date.strftime('%d %b %Y') }}</p>
+            <p>{{ other.description }}</p>
+            {% if other.item_type == 'found' and other.verify_question %}
+            <p><strong>Check question:</strong> {{ other.verify_question }}</p>
+            {% endif %}
+          </div>
+          <span class="pill {{ other.item_type }}">{{ score }}% match</span>
+          {% if other.item_type == 'found' %}
+          <form class="claim-form" method="POST" action="{{ url_for('claim_item', item_id=other.item_id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% if other.verify_question %}
+            <input type="text" name="answer" placeholder="Your answer" required>
+            {% endif %}
+            <button type="submit" class="btn">This is mine</button>
+          </form>
+          {% endif %}
         </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </section>
+  {% endif %}
 
-        <nav class="navbar">
-            <a href="#">Home</a>
-            <a href="#">Resources</a>
-            <a href="#" class="active">Lost & Found</a>
-            <a href="#">SkillSwap</a>
-        </nav>
-    </header>
+  <!-- Open reports -->
 
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Open reports</h2>
+      <p>Items that have not been returned yet.</p>
+    </div>
 
-    <!-- Page Introduction -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Lost & Found</h1>
-            <p>
-                Lost something on campus? Found an item?
-                Help your fellow students find their belongings.
-            </p>
+    <div class="skill-grid">
+      {% for item in items %}
+      <div class="skill-card">
+        <div class="skill-top">
+          <span class="pill {{ item.item_type }}">{{ item.item_type|upper }}</span>
+          <div>
+            <h3>{{ item.title }}</h3>
+            <span class="by">Reported by {{ item.reporter }}</span>
+          </div>
         </div>
-    </section>
-
-
-    <!-- Search and Filter -->
-    <section class="search-section">
-
-        <div class="search-box">
-            <input
-                type="text"
-                placeholder="Search for an item..."
-            >
-
-            <select>
-                <option value="">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="documents">Documents</option>
-                <option value="books">Books</option>
-                <option value="clothing">Clothing</option>
-                <option value="accessories">Accessories</option>
-                <option value="other">Other</option>
-            </select>
-
-            <select>
-                <option value="">Lost & Found</option>
-                <option value="lost">Lost Items</option>
-                <option value="found">Found Items</option>
-            </select>
-
-            <button type="button">Search</button>
+        <div class="tags">
+          <span class="tag">{{ item.category }}</span>
+          <span class="tag">{{ item.location }}</span>
+          <span class="tag">{{ item.event_date.strftime('%d %b %Y') }}</span>
         </div>
+        <p class="desc">{{ item.description }}</p>
 
-    </section>
+        {% if item.reported_by == session.get('user_id') %}
+        <form method="POST" action="{{ url_for('resolve_item', item_id=item.item_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn ghost">Mark as returned</button>
+        </form>
+        {% endif %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <h3>No open reports</h3>
+        <p>Nothing matches right now. Add a report below.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
 
+  <!-- Report an item -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Report an item</h2>
+      <p>Tell us what you lost or what you found.</p>
+    </div>
 
-    <!-- Action Buttons -->
-    <section class="actions">
+    <form class="grid-form" method="POST" action="{{ url_for('report_item') }}" style="margin-bottom:0">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <button class="lost-btn" type="button">
-            + Report Lost Item
-        </button>
-
-        <button class="found-btn" type="button">
-            + Report Found Item
-        </button>
-
-    </section>
-
-
-    <!-- Lost Items -->
-    <section class="items-section">
-
-        <div class="section-heading">
-            <h2>🔴 Lost Items</h2>
-            <p>Items reported missing by students</p>
+      <fieldset class="field full">
+        <legend>I want to report</legend>
+        <div class="roles">
+          <label><input type="radio" name="item_type" value="lost" checked> Something I lost</label>
+          <label><input type="radio" name="item_type" value="found"> Something I found</label>
         </div>
-
-        <div class="items-grid">
-
-            <!-- Lost Item 1 -->
-            <div class="item-card">
-
-                <div class="item-image">
-                    📱
-                </div>
-
-                <div class="item-content">
-                    <span class="status lost">LOST</span>
-
-                    <h3>iPhone 14</h3>
-
-                    <p class="category">
-                        Category: Electronics
-                    </p>
-
-                    <p>
-                        Black iPhone 14 with a transparent case.
-                        Last seen near the library.
-                    </p>
-
-                    <div class="item-info">
-                        <span>📍 Library</span>
-                        <span>📅 5 Sept 2026</span>
-                    </div>
-
-                    <p class="reported-by">
-                        Reported by: Aarav
-                    </p>
-
-                    <button class="details-btn" type="button">
-                        View Details
-                    </button>
-                </div>
-
-            </div>
-
-
-            <!-- Lost Item 2 -->
-            <div class="item-card">
-
-                <div class="item-image">
-                    🎧
-                </div>
-
-                <div class="item-content">
-                    <span class="status lost">LOST</span>
-
-                    <h3>Wireless Headphones</h3>
-
-                    <p class="category">
-                        Category: Electronics
-                    </p>
-
-                    <p>
-                        White wireless headphones in a small
-                        black carrying case.
-                    </p>
-
-                    <div class="item-info">
-                        <span>📍 Cafeteria</span>
-                        <span>📅 3 Sept 2026</span>
-                    </div>
-
-                    <p class="reported-by">
-                        Reported by: Riya
-                    </p>
-
-                    <button class="details-btn" type="button">
-                        View Details
-                    </button>
-                </div>
-
-            </div>
-
-
-            <!-- Lost Item 3 -->
-            <div class="item-card">
-
-                <div class="item-image">
-                    📚
-                </div>
-
-                <div class="item-content">
-                    <span class="status lost">LOST</span>
-
-                    <h3>Data Structures Book</h3>
-
-                    <p class="category">
-                        Category: Books
-                    </p>
-
-                    <p>
-                        Data Structures textbook with handwritten
-                        notes inside.
-                    </p>
-
-                    <div class="item-info">
-                        <span>📍 Block B</span>
-                        <span>📅 1 Sept 2026</span>
-                    </div>
-
-                    <p class="reported-by">
-                        Reported by: Kabir
-                    </p>
-
-                    <button class="details-btn" type="button">
-                        View Details
-                    </button>
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- Found Items -->
-    <section class="items-section found-section">
-
-        <div class="section-heading">
-            <h2>🟢 Found Items</h2>
-            <p>Items found around the campus</p>
-        </div>
-
-        <div class="items-grid">
-
-            <!-- Found Item 1 -->
-            <div class="item-card">
-
-                <div class="item-image">
-                    💳
-                </div>
-
-                <div class="item-content">
-                    <span class="status found">FOUND</span>
-
-                    <h3>Student ID Card</h3>
-
-                    <p class="category">
-                        Category: Documents
-                    </p>
-
-                    <p>
-                        Student ID card found near the main
-                        entrance of the college.
-                    </p>
-
-                    <div class="item-info">
-                        <span>📍 Main Gate</span>
-                        <span>📅 6 Sept 2026</span>
-                    </div>
-
-                    <p class="reported-by">
-                        Found by: Neha
-                    </p>
-
-                    <button class="details-btn" type="button">
-                        View Details
-                    </button>
-                </div>
-
-            </div>
-
-
-            <!-- Found Item 2 -->
-            <div class="item-card">
-
-                <div class="item-image">
-                    🔑
-                </div>
-
-                <div class="item-content">
-                    <span class="status found">FOUND</span>
-
-                    <h3>Keychain</h3>
-
-                    <p class="category">
-                        Category: Accessories
-                    </p>
-
-                    <p>
-                        Set of keys attached to a blue keychain.
-                    </p>
-
-                    <div class="item-info">
-                        <span>📍 Parking Area</span>
-                        <span>📅 4 Sept 2026</span>
-                    </div>
-
-                    <p class="reported-by">
-                        Found by: Yash
-                    </p>
-
-                    <button class="details-btn" type="button">
-                        View Details
-                    </button>
-                </div>
-
-            </div>
-
-
-            <!-- Found Item 3 -->
-            <div class="item-card">
-
-                <div class="item-image">
-                    👕
-                </div>
-
-                <div class="item-content">
-                    <span class="status found">FOUND</span>
-
-                    <h3>Black Hoodie</h3>
-
-                    <p class="category">
-                        Category: Clothing
-                    </p>
-
-                    <p>
-                        Black hoodie found inside classroom
-                        B-204.
-                    </p>
-
-                    <div class="item-info">
-                        <span>📍 Block B</span>
-                        <span>📅 2 Sept 2026</span>
-                    </div>
-
-                    <p class="reported-by">
-                        Found by: Mehak
-                    </p>
-
-                    <button class="details-btn" type="button">
-                        View Details
-                    </button>
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- Footer -->
-    <footer class="footer">
-        <p>© 2026 CampusConnect | Helping Students Connect</p>
-    </footer>
-
-</body>
-</html>
+      </fieldset>
+
+      <div class="field">
+        <label for="title">Item name</label>
+        <input type="text" id="title" name="title" maxlength="100" placeholder="e.g. Black wallet" required>
+      </div>
+      <div class="field">
+        <label for="rcategory">Category</label>
+        <select id="rcategory" name="category" required>
+          <option value="">Select category</option>
+          {% for c in categories %}
+          <option value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="location">Where</label>
+        <input type="text" id="location" name="location" maxlength="100" placeholder="e.g. Library, Block B" required>
+      </div>
+      <div class="field">
+        <label for="event_date">When</label>
+        <input type="date" id="event_date" name="event_date" required>
+      </div>
+      <div class="field full">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4" placeholder="Colour, brand, marks, anything that identifies it" required></textarea>
+      </div>
+
+      <div class="field">
+        <label for="verify_question">Check question (for found items, optional)</label>
+        <input type="text" id="verify_question" name="verify_question" maxlength="255" placeholder="e.g. What is the phone wallpaper?">
+      </div>
+      <div class="field">
+        <label for="verify_answer">Answer to your question</label>
+        <input type="text" id="verify_answer" name="verify_answer" maxlength="255" placeholder="Only you can see this">
+      </div>
+
+      <button type="submit" class="btn">Submit report</button>
+    </form>
+  </section>
+
+</main>
+<footer class="site-foot">&copy; 2026 CampusConnect</footer>
+{% endblock %}
 
